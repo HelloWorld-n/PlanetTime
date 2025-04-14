@@ -108,3 +108,50 @@ func TestMarsDateParams(t *testing.T) {
 		assert.Equal(t, fragment, 22)
 	})
 }
+
+func TestMarsTimeFormat(t *testing.T) {
+	t.Run("BasicTest", func(t *testing.T) {
+		earthTime, err := time.Parse(time.RFC3339, "1987-05-02T05:52:09Z")
+		assert.Equal(t, err, nil)
+		marsTime := NewMarsTime(&earthTime)
+		tests := []struct {
+			layout   string
+			expected string
+		}{
+			{"%R-%0M-%0D%'T%0V:%0L:%0F", "201-02-03T04:05:06"},
+			{"%R=%0M=%0D%'T%0V|%0L|%0F", "201=02=03T04|05|06"},
+			{"rot %R m%M sol %D started %V vinquas %L layers %F fragments ago", "rot 201 m2 sol 3 started 4 vinquas 5 layers 6 fragments ago"},
+			{"%R %NM %D%'th", "201 Dhanus 3th"},
+			{"%R=W%0W-%WS", "201=W05-3"},
+			{"rotation %R week %W %NS", "rotation 201 week 5 Martis"},
+		}
+		for _, tc := range tests {
+			t.Run(tc.layout, func(t *testing.T) {
+				result := marsTime.Format(tc.layout)
+				assert.Equal(t, result, tc.expected)
+			})
+		}
+	})
+	t.Run("SolSaturni", func(t *testing.T) {
+		earthTime, err := time.Parse(time.RFC3339, "2000-02-19T21:03:32Z")
+		assert.Equal(t, err, nil)
+		marsTime := NewMarsTime(&earthTime)
+		tests := []struct {
+			layout   string
+			expected string
+		}{
+			{"%R-%0M-%0D%'T%0V:%0L:%0F", "207-21-14T16:14:10"},
+			{"%R=%0M=%0D%'T%0V|%0L|%0F", "207=21=14T16|14|10"},
+			{"rot %R m%M sol %D started %V vinquas %L layers %F fragments ago", "rot 207 m21 sol 14 started 16 vinquas 14 layers 10 fragments ago"},
+			{"%R %NM %D%'th", "207 Libra 14th"},
+			{"%R=W%0W-%WS", "207=W82-7"},
+			{"rotation %R week %W %NS", "rotation 207 week 82 Saturni"},
+		}
+		for _, tc := range tests {
+			t.Run(tc.layout, func(t *testing.T) {
+				result := marsTime.Format(tc.layout)
+				assert.Equal(t, result, tc.expected)
+			})
+		}
+	})
+}

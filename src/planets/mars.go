@@ -2,6 +2,7 @@ package planets
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -146,7 +147,6 @@ func NewMarsTime(t *time.Time) (res MarsTime) {
 func (t MarsTime) Params() (rotation int, month int, sol int, vinqua int, layer int, fragment int, rem int) {
 	month = 1
 	sol = t.TotalSols
-	fmt.Println(sol, SolsInRotation(rotation))
 	for sol >= SolsInRotation(rotation) {
 		sol -= SolsInRotation(rotation)
 		rotation += 1
@@ -161,6 +161,101 @@ func (t MarsTime) Params() (rotation int, month int, sol int, vinqua int, layer 
 	layer = int(t.DurationOfCurrentSol % Vinqua / Layer)
 	fragment = int(t.DurationOfCurrentSol % Layer / Fragment)
 	rem = int(t.DurationOfCurrentSol % Fragment)
-	fmt.Println(rotation, month, sol, vinqua, layer, fragment, rem)
 	return
+}
+
+func (t MarsTime) Format(layout string) (res string) {
+	rotation, month, sol, vinqua, layer, fragment, rem := t.Params()
+	week := (4 * (month - 1)) + (sol-1)/7 + 1
+	weekSol := sol % 7
+	if weekSol == 0 {
+		weekSol = 7
+	}
+	longSol := longWeekSolNames[weekSol-1]
+	shortSol := shortWeekSolNames[weekSol-1]
+	longMonth := longMonthNames[month-1]
+	shortMonth := shortMonthNames[month-1]
+
+	replacements := map[string]string{
+		"%R":  itoa(rotation),
+		"%M":  itoa(month),
+		"%0M": pad2(month),
+		"%_M": padSpace(month),
+		"%nM": shortMonth,
+		"%NM": longMonth,
+		"%S":  itoa(sol),
+		"%0S": pad2(sol),
+		"%_S": padSpace(sol),
+		"%D":  itoa(sol),
+		"%0D": pad2(sol),
+		"%_D": padSpace(sol),
+		"%w":  itoa(week),
+		"%0W": pad2(week),
+		"%_W": padSpace(week),
+		"%W":  itoa(week),
+		"%WS": itoa(weekSol),
+		"%ws": itoa(weekSol),
+		"%NS": longSol,
+		"%nS": shortSol,
+		"%V":  itoa(vinqua),
+		"%0V": pad2(vinqua),
+		"%_V": padSpace(vinqua),
+		"%L":  itoa(layer),
+		"%0L": pad2(layer),
+		"%_L": padSpace(layer),
+		"%F":  itoa(fragment),
+		"%0F": pad2(fragment),
+		"%_F": padSpace(fragment),
+		"%f":  itoa(rem),
+		"%f0": pad9(rem),
+		"%%":  "%",
+	}
+
+	var builder strings.Builder
+	for i := 0; i < len(layout); {
+		if layout[i] == '%' {
+			matched := false
+			for length := 4; length > 1; length-- {
+				if i+length <= len(layout) {
+					token := layout[i : i+length]
+					if token == "%'" {
+						matched = true
+						i += 2
+						break
+					}
+					if val, ok := replacements[token]; ok {
+						builder.WriteString(val)
+						i += length
+						matched = true
+						break
+					}
+				}
+			}
+			if !matched {
+				return (`` +
+					`use "%'" to avoid conflict with possible future update ` +
+					`for example use "%V%'E" when you want vinqua followed by "E" so that "%VE" can be used in future`)
+			}
+		} else {
+			builder.WriteByte(layout[i])
+			i++
+		}
+	}
+	return builder.String()
+}
+
+func itoa(n int) string {
+	return fmt.Sprintf("%d", n)
+}
+
+func pad2(n int) string {
+	return fmt.Sprintf("%02d", n)
+}
+
+func pad9(n int) string {
+	return fmt.Sprintf("%09d", n)
+}
+
+func padSpace(n int) string {
+	return fmt.Sprintf("%2d", n)
 }
