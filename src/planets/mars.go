@@ -232,7 +232,19 @@ func (t MarsTime) Format(layout string) (res string) {
 				}
 			}
 			if !matched {
+				end := i + 1
+				for end < len(layout) && end < i+4 {
+					c := layout[end]
+					if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' {
+						end++
+					} else {
+						break
+					}
+				}
+				fragment := layout[i:end]
 				return (`` +
+					`error: fragment "` + fragment + `" not recognized: ` +
+					`use "%%" for literal "%" and ` +
 					`use "%'" to avoid conflict with possible future update ` +
 					`for example use "%V%'E" when you want vinqua followed by "E" so that "%VE" can be used in future`)
 			}

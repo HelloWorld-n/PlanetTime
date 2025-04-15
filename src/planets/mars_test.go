@@ -1,6 +1,8 @@
 package planets
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -151,6 +153,25 @@ func TestMarsTimeFormat(t *testing.T) {
 			t.Run(tc.layout, func(t *testing.T) {
 				result := marsTime.Format(tc.layout)
 				assert.Equal(t, result, tc.expected)
+			})
+		}
+	})
+	t.Run("Errors", func(t *testing.T) {
+		earthTime, err := time.Parse(time.RFC3339, "2025-04-15T06:36:43Z")
+		assert.Equal(t, err, nil)
+		marsTime := NewMarsTime(&earthTime)
+		tests := []string{
+			// only digit will never be used
+			"%0 %1 %2 %3 %4 %5 %6 %7 %8 %9",
+
+			// break compatability later; might need update
+			"the %0A mistake",
+		}
+		for _, tc := range tests {
+			t.Run(tc, func(t *testing.T) {
+				result := marsTime.Format(tc)
+				fmt.Println(result)
+				assert.Equal(t, strings.HasPrefix(result, "error"), true)
 			})
 		}
 	})
