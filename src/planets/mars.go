@@ -2,6 +2,7 @@ package planets
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -270,4 +271,249 @@ func pad9(n int) string {
 
 func padSpace(n int) string {
 	return fmt.Sprintf("%2d", n)
+}
+
+func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
+	var (
+		rotation int
+		month    int
+		sol      int
+		vinqua   int
+		layer    int
+		fragment int
+		rem      int
+
+		week    int
+		weekSol int
+	)
+
+	i, j := 0, 0
+	for i < len(layout) {
+		if layout[i] == '%' {
+			if i+2 <= len(layout) && layout[i:i+2] == "%'" {
+				i += 2
+				continue
+			}
+			var token string
+			found := false
+			if i+3 <= len(layout) {
+				token = layout[i : i+3]
+				if validToken(token) {
+					i += 3
+					found = true
+				}
+			}
+			if !found && i+2 <= len(layout) {
+				token = layout[i : i+2]
+				if validToken(token) {
+					i += 2
+					found = true
+				}
+			}
+			if !found {
+				fragEnd := i + 1
+				for fragEnd < len(layout) && fragEnd < i+4 {
+					fragEnd++
+				}
+				return MarsTime{}, fmt.Errorf(`error: fragment "%s" not recognized: use "%%%%" for literal "%%" and use "%%'" to avoid conflict with possible future update`, layout[i:fragEnd])
+			}
+
+			var value int
+			var consumed int
+			var parseErr error
+
+			switch token {
+			case
+				"%R", "%M", "%0M", "%_M",
+				"%S", "%0S", "%_S",
+				"%D", "%0D", "%_D",
+				"%V", "%0V", "%_V",
+				"%L", "%0L", "%_L",
+				"%F", "%0F", "%_F",
+				"%f", "%f0",
+				"%w", "%0W", "%_W", "%W", "%WS", "%ws":
+				value, consumed, parseErr = parseNumeric(input[j:])
+				if parseErr != nil {
+					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
+				}
+			case "%%":
+				if j >= len(input) || input[j] != '%' {
+					return MarsTime{}, fmt.Errorf("expected literal '%%' at position %d in input", j)
+				}
+				consumed = 1
+			case "%NM":
+				value, consumed, parseErr = parseMonthName(input[j:], true)
+				if parseErr != nil {
+					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
+				}
+			case "%nM":
+				value, consumed, parseErr = parseMonthName(input[j:], false)
+				if parseErr != nil {
+					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
+				}
+			case "%NS":
+				value, consumed, parseErr = parseWeekSolName(input[j:], true)
+				if parseErr != nil {
+					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
+				}
+			case "%nS":
+				value, consumed, parseErr = parseWeekSolName(input[j:], false)
+				if parseErr != nil {
+					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
+				}
+			}
+			j += consumed
+
+			switch token {
+			case "%R":
+				rotation = value
+			case "%M", "%0M", "%_M", "%NM", "%nM":
+				month = value
+			case "%S", "%0S", "%_S", "%D", "%0D", "%_D":
+				sol = value
+			case "%V", "%0V", "%_V":
+				vinqua = value
+			case "%L", "%0L", "%_L":
+				layer = value
+			case "%F", "%0F", "%_F":
+				fragment = value
+			case "%f", "%f0":
+				rem = value
+			case "%w", "%WS", "%ws", "%nS", "%NS":
+				weekSol = value
+			case "%W", "%0W", "%_W":
+				week = value
+			}
+		} else {
+			if j >= len(input) {
+				return MarsTime{}, fmt.Errorf("input not fully consumed, remaining: %q", input[j:])
+			}
+			if layout[i] != input[j] {
+				return MarsTime{}, fmt.Errorf("literal mismatch at layout[%d]=%q vs input[%d]=%q", i, layout[i], j, input[j])
+			}
+			i++
+			j++
+		}
+	}
+	if j != len(input) {
+		return MarsTime{}, fmt.Errorf("input not fully consumed, remaining: %q", input[j:])
+	}
+
+	if month == 0 && sol == 0 && week > 0 && weekSol > 0 {
+		month = (week-1)/4 + 1
+		weekIndex := (week - 1) % 4
+		sol = 7*weekIndex + weekSol
+	}
+
+	if rotation == 0 || month == 0 || sol == 0 {
+		return MarsTime{}, fmt.Errorf("insufficient data to reconstruct MarsTime (month: %d, sol: %d)", month, sol)
+	}
+
+	totalSols := 0
+	for r := 0; r < rotation; r++ {
+		totalSols += SolsInRotation(r)
+	}
+	for m := 1; m < month; m++ {
+		totalSols += SolsInMonth(m)
+	}
+	totalSols += (sol - 1)
+
+	duration := time.Duration(vinqua)*Vinqua +
+		time.Duration(layer)*Layer +
+		time.Duration(fragment)*Fragment +
+		time.Duration(rem)
+
+	return MarsTime{
+		TotalSols:            totalSols,
+		DurationOfCurrentSol: duration,
+	}, nil
+}
+
+func validToken(token string) bool {
+	valid := map[string]bool{
+		"%R":  true,
+		"%M":  true,
+		"%0M": true,
+		"%_M": true,
+		"%nM": true,
+		"%NM": true,
+		"%S":  true,
+		"%0S": true,
+		"%_S": true,
+		"%D":  true,
+		"%0D": true,
+		"%_D": true,
+		"%w":  true,
+		"%0W": true,
+		"%_W": true,
+		"%W":  true,
+		"%WS": true,
+		"%ws": true,
+		"%NS": true,
+		"%nS": true,
+		"%V":  true,
+		"%0V": true,
+		"%_V": true,
+		"%L":  true,
+		"%0L": true,
+		"%_L": true,
+		"%F":  true,
+		"%0F": true,
+		"%_F": true,
+		"%f":  true,
+		"%f0": true,
+		"%%":  true,
+		"%'":  true,
+	}
+	return valid[token]
+}
+
+func parseNumeric(s string) (n int, nRunes int, err error) {
+	// allow leading spaces
+	for nRunes < len(s) && s[nRunes] == ' ' {
+		nRunes++
+	}
+	start := nRunes
+	for nRunes < len(s) && s[nRunes] >= '0' && s[nRunes] <= '9' {
+		nRunes++
+	}
+	if start == nRunes {
+		err = fmt.Errorf("expected numeric value, got %q", s)
+		return
+	}
+	numStr := s[start:nRunes]
+	n, err = strconv.Atoi(numStr)
+	return
+}
+
+func parseMonthName(s string, long bool) (n int, nameLen int, err error) {
+	var names []string
+	if long {
+		names = longMonthNames
+	} else {
+		names = shortMonthNames
+	}
+	for i, name := range names {
+		if strings.HasPrefix(s, name) {
+			return i + 1, len(name), nil
+		}
+	}
+	err = fmt.Errorf("no matching month name found in %q", s)
+	return
+}
+
+func parseWeekSolName(s string, long bool) (n int, nameLen int, err error) {
+	var names []string
+	if long {
+		names = longWeekSolNames
+	} else {
+		names = shortWeekSolNames
+	}
+	for i, name := range names {
+		if strings.HasPrefix(s, name) {
+			return i + 1, len(name), nil
+		}
+	}
+	err = fmt.Errorf("no matching weekSol name found in %q", s)
+	return
 }
