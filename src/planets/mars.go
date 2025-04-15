@@ -19,78 +19,88 @@ const (
 	Sol      = Vinqua * 24
 )
 
-var longWeekSolNames = []string{
-	"Solis",
-	"Lunae",
-	"Martis",
-	"Mercurii",
-	"Jovis",
-	"Veneris",
-	"Saturni",
+// Functions returning the slices, instead of global variables, to emulate immutability
+
+func MarsLongWeekSolNames() []string {
+	return []string{
+		"Solis",
+		"Lunae",
+		"Martis",
+		"Mercurii",
+		"Jovis",
+		"Veneris",
+		"Saturni",
+	}
 }
 
-var shortWeekSolNames = []string{
-	"Sol", // for "Sol Solis"
-	"Lun", // for "Sol Lunae"
-	"Mar", // for "Sol Martis"
-	"Mer", // for "Sol Mercurii"
-	"Jov", // for "Sol Jovis"
-	"Ven", // for "Sol Veneris"
-	"Sat", // for "Sol Saturni"
+func MarsShortWeekSolNames() []string {
+	return []string{
+		"Sol", // for "Sol Solis"
+		"Lun", // for "Sol Lunae"
+		"Mar", // for "Sol Martis"
+		"Mer", // for "Sol Mercurii"
+		"Jov", // for "Sol Jovis"
+		"Ven", // for "Sol Veneris"
+		"Sat", // for "Sol Saturni"
+	}
 }
 
-var longMonthNames = []string{
-	"Sagittarius",
-	"Dhanus",
-	"Capricornus",
-	"Makara",
-	"Aquarius",
-	"Kumbha",
-	"Pisces",
-	"Mina",
-	"Aries",
-	"Mesha",
-	"Taurus",
-	"Vrishabha",
-	"Gemini",
-	"Mithuna",
-	"Cancer",
-	"Karka",
-	"Leo",
-	"Simha",
-	"Virgo",
-	"Kanya",
-	"Libra",
-	"Tula",
-	"Scorpio",
-	"Vrishika",
+func MarsLongMonthNames() []string {
+	return []string{
+		"Sagittarius",
+		"Dhanus",
+		"Capricornus",
+		"Makara",
+		"Aquarius",
+		"Kumbha",
+		"Pisces",
+		"Mina",
+		"Aries",
+		"Mesha",
+		"Taurus",
+		"Vrishabha",
+		"Gemini",
+		"Mithuna",
+		"Cancer",
+		"Karka",
+		"Leo",
+		"Simha",
+		"Virgo",
+		"Kanya",
+		"Libra",
+		"Tula",
+		"Scorpio",
+		"Vrishika",
+	}
 }
 
-var shortMonthNames = []string{
-	"Sag", // Sagittarius
-	"Dha", // Dhanus
-	"Cap", // Capricornus
-	"Mak", // Makara
-	"Aqu", // Aquarius
-	"Kum", // Kumbha
-	"Pis", // Pisces
-	"Min", // Mina
-	"Ari", // Aries
-	"Mes", // Mesha
-	"Tau", // Taurus
-	"Vrb", // Vrishabha (chosen to differentiate from Vrishika)
-	"Gem", // Gemini
-	"Mit", // Mithuna
-	"Can", // Cancer
-	"Kar", // Karka
-	"Leo", // Leo
-	"Sim", // Simha
-	"Vir", // Virgo
-	"Kan", // Kanya
-	"Lib", // Libra
-	"Tul", // Tula
-	"Sco", // Scorpio
-	"Vrk", // Vrishika (chosen to differentiate from Vrishabha)
+func MarsShortMonthNames() []string {
+	return []string{
+		"Sag", // Sagittarius
+		"Dha", // Dhanus
+		"Cap", // Capricornus
+		"Mak", // Makara
+		"Aqu", // Aquarius
+		"Kum", // Kumbha
+		"Pis", // Pisces
+		"Min", // Mina
+		"Ari", // Aries
+		"Mes", // Mesha
+		"Tau", // Taurus
+		"Vrb", // Vrishabha (chosen to differentiate from Vrishika)
+		"Gem", // Gemini
+		"Mit", // Mithuna
+		"Can", // Cancer
+		"Kar", // Karka
+		"Leo", // Leo
+		"Sim", // Simha
+		"Vir", // Virgo
+		"Kan", // Kanya
+		"Lib", // Libra
+		"Tul", // Tula
+		"Sco", // Scorpio
+		"Vrk", // Vrishika (chosen to differentiate from Vrishabha)
+	}
 }
 
 func RotationHasLeapVrishika28th(rotation int) (res bool) {
@@ -172,10 +182,11 @@ func (t MarsTime) Format(layout string) (res string) {
 	if weekSol == 0 {
 		weekSol = 7
 	}
-	longSol := longWeekSolNames[weekSol-1]
-	shortSol := shortWeekSolNames[weekSol-1]
-	longMonth := longMonthNames[month-1]
-	shortMonth := shortMonthNames[month-1]
+	
+	longSol := MarsLongWeekSolNames()[weekSol-1]
+	shortSol := MarsShortWeekSolNames()[weekSol-1]
+	longMonth := MarsLongMonthNames()[month-1]
+	shortMonth := MarsShortMonthNames()[month-1]
 
 	replacements := map[string]string{
 		"%R":  itoa(rotation),
@@ -332,7 +343,7 @@ func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 				"%F", "%0F", "%_F",
 				"%f", "%f0",
 				"%w", "%0W", "%_W", "%W", "%WS", "%ws":
-				value, consumed, parseErr = parseNumeric(input[j:])
+				value, consumed, parseErr = ParseNumeric(input[j:])
 				if parseErr != nil {
 					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
 				}
@@ -342,22 +353,22 @@ func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 				}
 				consumed = 1
 			case "%NM":
-				value, consumed, parseErr = parseMonthName(input[j:], true)
+				value, consumed, parseErr = ParseMarsMonthName(input[j:], true)
 				if parseErr != nil {
 					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
 				}
 			case "%nM":
-				value, consumed, parseErr = parseMonthName(input[j:], false)
+				value, consumed, parseErr = ParseMarsMonthName(input[j:], false)
 				if parseErr != nil {
 					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
 				}
 			case "%NS":
-				value, consumed, parseErr = parseWeekSolName(input[j:], true)
+				value, consumed, parseErr = ParseMarsWeekSolName(input[j:], true)
 				if parseErr != nil {
 					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
 				}
 			case "%nS":
-				value, consumed, parseErr = parseWeekSolName(input[j:], false)
+				value, consumed, parseErr = ParseMarsWeekSolName(input[j:], false)
 				if parseErr != nil {
 					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
 				}
@@ -468,7 +479,7 @@ func validToken(token string) bool {
 	return valid[token]
 }
 
-func parseNumeric(s string) (n int, nRunes int, err error) {
+func ParseNumeric(s string) (n int, nRunes int, err error) {
 	// allow leading spaces
 	for nRunes < len(s) && s[nRunes] == ' ' {
 		nRunes++
@@ -486,12 +497,12 @@ func parseNumeric(s string) (n int, nRunes int, err error) {
 	return
 }
 
-func parseMonthName(s string, long bool) (n int, nameLen int, err error) {
+func ParseMarsMonthName(s string, long bool) (n int, nameLen int, err error) {
 	var names []string
 	if long {
-		names = longMonthNames
+		names = MarsLongMonthNames()
 	} else {
-		names = shortMonthNames
+		names = MarsShortMonthNames()
 	}
 	for i, name := range names {
 		if strings.HasPrefix(s, name) {
@@ -502,12 +513,12 @@ func parseMonthName(s string, long bool) (n int, nameLen int, err error) {
 	return
 }
 
-func parseWeekSolName(s string, long bool) (n int, nameLen int, err error) {
+func ParseMarsWeekSolName(s string, long bool) (n int, nameLen int, err error) {
 	var names []string
 	if long {
-		names = longWeekSolNames
+		names = MarsLongWeekSolNames()
 	} else {
-		names = shortWeekSolNames
+		names = MarsShortWeekSolNames()
 	}
 	for i, name := range names {
 		if strings.HasPrefix(s, name) {
