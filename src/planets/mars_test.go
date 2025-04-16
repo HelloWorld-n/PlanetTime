@@ -294,3 +294,12 @@ func TestParseMarsTime(t *testing.T) {
 		}
 	})
 }
+
+func TestMarsDateTime(t *testing.T) {
+	t.Run("Now", func(t *testing.T) {
+		earthTime, err := time.Parse(time.RFC3339, "2025-04-14T08:48:29Z")
+		assert.Equal(t, err, nil)
+		marsTime := NewMarsTime(&earthTime)
+		assert.Equal(t, earthTime, marsTime.Time())
+	})
+}

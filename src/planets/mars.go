@@ -182,7 +182,7 @@ func (t MarsTime) Format(layout string) (res string) {
 	if weekSol == 0 {
 		weekSol = 7
 	}
-	
+
 	longSol := MarsLongWeekSolNames()[weekSol-1]
 	shortSol := MarsShortWeekSolNames()[weekSol-1]
 	longMonth := MarsLongMonthNames()[month-1]
@@ -526,5 +526,20 @@ func ParseMarsWeekSolName(s string, long bool) (n int, nameLen int, err error) {
 		}
 	}
 	err = fmt.Errorf("no matching weekSol name found in %q", s)
+	return
+}
+
+func (mt MarsTime) Time() (result time.Time) {
+	result = time.Date(1609, time.March, 11, 18, 40, 34, 0, time.UTC)
+
+	quof := 100000
+	for mt.TotalSols > quof {
+		fmt.Println(Sol * time.Duration(quof))
+		result = result.Add(Sol * time.Duration(quof))
+		mt.TotalSols -= quof
+	}
+	result = result.Add(Sol * time.Duration(mt.TotalSols))
+	result = result.Add(mt.DurationOfCurrentSol)
+
 	return
 }
