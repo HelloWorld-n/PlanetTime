@@ -209,9 +209,11 @@ func (t MarsTime) Format(layout string) (res string) {
 		"%_W": format.PadSpace(week),
 		"%W":  format.Iota(week),
 		"%WS": format.Iota(weekSol),
-		"%ws": format.Iota(weekSol),
 		"%NS": longSol,
 		"%nS": shortSol,
+		"%WD": format.Iota(weekSol),
+		"%ND": longSol,
+		"%nD": shortSol,
 		"%V":  format.Iota(vinqua),
 		"%0V": format.Pad2(vinqua),
 		"%_V": format.PadSpace(vinqua),
@@ -330,7 +332,8 @@ func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 				"%L", "%0L", "%_L",
 				"%F", "%0F", "%_F",
 				"%f", "%f0",
-				"%w", "%0W", "%_W", "%W", "%WS", "%ws":
+				"%w", "%0W", "%_W", "%W", 
+				"%WS", "%wS", "%WD", "%wD":
 				value, consumed, parseErr = format.ParseNumeric(input[j:])
 				if parseErr != nil {
 					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
@@ -356,12 +359,12 @@ func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 				if parseErr != nil {
 					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
 				}
-			case "%NS":
+			case "%NS", "%ND":
 				value, consumed, parseErr = ParseMarsWeekSolName(input[j:], true)
 				if parseErr != nil {
 					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
 				}
-			case "%nS":
+			case "%nS", "%nD":
 				value, consumed, parseErr = ParseMarsWeekSolName(input[j:], false)
 				if parseErr != nil {
 					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
@@ -384,7 +387,7 @@ func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 				fragment = value
 			case "%f", "%f0":
 				rem = value
-			case "%w", "%WS", "%ws", "%nS", "%NS":
+			case "%w", "%WS", "%nS", "%NS", "%WD", "%nD", "%ND":
 				weekSol = value
 			case "%W", "%0W", "%_W":
 				week = value
@@ -455,9 +458,11 @@ func validToken(token string) bool {
 		"%_W": true,
 		"%W":  true,
 		"%WS": true,
-		"%ws": true,
 		"%NS": true,
 		"%nS": true,
+		"%WD": true,
+		"%ND": true,
+		"%nD": true,
 		"%V":  true,
 		"%0V": true,
 		"%_V": true,
