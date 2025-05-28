@@ -127,7 +127,7 @@ func TestMarsTimeFormat(t *testing.T) {
 			{"%R %NM %S%'th", "201 Dhanus 3th"},
 			{"%R=W%0W=%WS", "201=W05=3"},
 			{"rotation %R week %W %NS", "rotation 201 week 5 Martis"},
-			
+
 			{"%R=%0M=%0D%'T%0V|%0L|%0F", "201=02=03T04|05|06"},
 			{"rot %R m%M sol %D started %V vinquas %L layers %F fragments ago", "rot 201 m2 sol 3 started 4 vinquas 5 layers 6 fragments ago"},
 			{"%R %NM %D%'th", "201 Dhanus 3th"},
@@ -154,7 +154,7 @@ func TestMarsTimeFormat(t *testing.T) {
 			{"%R %NM %S%'th", "207 Libra 14th"},
 			{"%R=W%0W=%WS", "207=W82=7"},
 			{"rotation %R week %W %NS", "rotation 207 week 82 Saturni"},
-			
+
 			{"%R=%0M=%0D%'T%0V|%0L|%0F", "207=21=14T16|14|10"},
 			{"rot %R m%M sol %D started %V vinquas %L layers %F fragments ago", "rot 207 m21 sol 14 started 16 vinquas 14 layers 10 fragments ago"},
 			{"%R %NM %D%'th", "207 Libra 14th"},
@@ -203,7 +203,7 @@ func TestParseMarsTime(t *testing.T) {
 			{"%R=W%0W=%WS", "201=W05=3"},
 			{"rotation %R week %W %NS", "rotation 201 week 5 Martis"},
 			{"rotation%%%R week %W %NS", "rotation%201 week 5 Martis"},
-			
+
 			{"%R=%0M=%0D%'T%0V|%0L|%0F", "201=02=03T04|05|06"},
 			{"%R=%0M=%0D%'T%0V|%0L|%0F.%f", "201=02=03T04|05|06.712563512"},
 			{"rot %R m%M sol %D started %V vinquas %L layers %F fragments ago", "rot 201 m2 sol 3 started 4 vinquas 5 layers 6 fragments ago"},
@@ -215,7 +215,7 @@ func TestParseMarsTime(t *testing.T) {
 		}
 		for _, tc := range tests {
 			t.Run(tc.layout, func(t *testing.T) {
-				marsTime, err := planets.ParseMarsTime(tc.layout, tc.expected)
+				marsTime, err := planets.MarsTime{}.Parse(tc.layout, tc.expected)
 				result := marsTime.Format(tc.layout)
 				if err != nil {
 					fmt.Println(err)
@@ -239,7 +239,7 @@ func TestParseMarsTime(t *testing.T) {
 			{"%R %nM %_S", "207 Lib 14"},
 			{"%R %nM %_S", "207 Lib  7"},
 			{"rotation %R week %W %nS", "rotation 207 week 82 Sat"},
-			
+
 			{"%R=%0M=%0D%'T%0V|%0L|%0F", "207=21=14T16|14|10"},
 			{"rot %R m%M sol %D started %V vinquas %L layers %F fragments ago", "rot 207 m21 sol 14 started 16 vinquas 14 layers 10 fragments ago"},
 			{"%R %NM %D%'th", "207 Libra 14th"},
@@ -253,7 +253,7 @@ func TestParseMarsTime(t *testing.T) {
 		}
 		for _, tc := range tests {
 			t.Run(tc.layout, func(t *testing.T) {
-				marsTime, err := planets.ParseMarsTime(tc.layout, tc.expected)
+				marsTime, err := planets.MarsTime{}.Parse(tc.layout, tc.expected)
 				result := marsTime.Format(tc.layout)
 				if err != nil {
 					fmt.Println(err)
@@ -285,7 +285,7 @@ func TestParseMarsTime(t *testing.T) {
 		}
 		for _, tc := range tests {
 			t.Run(tc.layout, func(t *testing.T) {
-				_, err := planets.ParseMarsTime(tc.layout, tc.expected)
+				_, err := planets.MarsTime{}.Parse(tc.layout, tc.expected)
 				assert.NotEqual(t, err, nil)
 				fmt.Println(err)
 			})
@@ -304,7 +304,7 @@ func TestParseMarsTime(t *testing.T) {
 		}
 		for _, tc := range tests {
 			t.Run(tc.layout, func(t *testing.T) {
-				_, err := planets.ParseMarsTime(tc.layout, tc.expected)
+				_, err := planets.MarsTime{}.Parse(tc.layout, tc.expected)
 				assert.NotEqual(t, err, nil)
 				fmt.Println(err)
 			})
@@ -320,7 +320,7 @@ func TestParseMarsTime(t *testing.T) {
 		}
 		for _, tc := range tests {
 			t.Run(tc.layout, func(t *testing.T) {
-				_, err := planets.ParseMarsTime(tc.layout, tc.expected)
+				_, err := planets.MarsTime{}.Parse(tc.layout, tc.expected)
 				assert.NotEqual(t, err, nil)
 				fmt.Println(err)
 			})

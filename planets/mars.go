@@ -273,6 +273,10 @@ func (t MarsTime) Format(layout string) (res string) {
 	return builder.String()
 }
 
+func (t MarsTime) Parse(layout string, input string) (mt MarsTime, err error) {
+	return ParseMarsTime(layout, input)
+}
+
 func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 	var (
 		rotation int
@@ -332,7 +336,7 @@ func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 				"%L", "%0L", "%_L",
 				"%F", "%0F", "%_F",
 				"%f", "%f0",
-				"%w", "%0W", "%_W", "%W", 
+				"%w", "%0W", "%_W", "%W",
 				"%WS", "%wS", "%WD", "%wD":
 				value, consumed, parseErr = format.ParseNumeric(input[j:])
 				if parseErr != nil {
@@ -480,6 +484,10 @@ func validToken(token string) bool {
 	return valid[token]
 }
 
+func (t MarsTime) ParseMonthName(s string, long bool) (n int, nameLen int, err error) {
+	return ParseMarsMonthName(s, long)
+}
+
 func ParseMarsMonthName(s string, long bool) (n int, nameLen int, err error) {
 	var names []string
 	if long {
@@ -494,6 +502,10 @@ func ParseMarsMonthName(s string, long bool) (n int, nameLen int, err error) {
 	}
 	err = fmt.Errorf("no matching month name found in %q", s)
 	return
+}
+
+func (t MarsTime) ParseWeekSolName(s string, long bool) (n int, nameLen int, err error) {
+	return ParseMarsWeekSolName(s, long)
 }
 
 func ParseMarsWeekSolName(s string, long bool) (n int, nameLen int, err error) {
