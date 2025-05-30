@@ -133,6 +133,8 @@ func TestMarsTimeFormat(t *testing.T) {
 			{"%R %NM %D%'th", "201 Dhanus 3th"},
 			{"%R=W%0W=%WD", "201=W05=3"},
 			{"rotation %R week %W %ND", "rotation 201 week 5 Martis"},
+
+			{"%R=%0M=%0D%Vu%0V11|%0L|%0F", "201=02=03A04|05|06"},
 		}
 		for _, tc := range tests {
 			t.Run(tc.layout, func(t *testing.T) {
@@ -160,6 +162,9 @@ func TestMarsTimeFormat(t *testing.T) {
 			{"%R %NM %D%'th", "207 Libra 14th"},
 			{"%R=W%0W=%WD", "207=W82=7"},
 			{"rotation %R week %W %ND", "rotation 207 week 82 Saturni"},
+
+			{"%R=%0M=%0D%Vu%0V11|%0L|%0F", "207=21=14P04|14|10"},
+			{"%R=%0M=%0D %Vl.m. %V11|%0L|%0F", "207=21=14 p.m. 4|14|10"},
 		}
 		for _, tc := range tests {
 			t.Run(tc.layout, func(t *testing.T) {
@@ -262,6 +267,30 @@ func TestParseMarsTime(t *testing.T) {
 			})
 		}
 	})
+	t.Run("SplitVinquaInfo", func(t *testing.T) {
+		tests := []struct {
+			layout   string
+			expected string
+		}{
+			{"%R=%0M=%0D%Vu%0V11|%0L|%0F", "207=21=14A04|14|10"},
+			{"%R=%0M=%0D %Vl.m. %V11|%0L|%0F", "207=21=14 a.m. 4|14|10"},
+			{"%R=%0M=%0D %Vl.m. %V12|%0L|%0F", "207=21=14 a.m. 4|14|10"},
+
+			{"%R=%0M=%0D%Vu%0V11|%0L|%0F", "207=21=14P04|14|10"},
+			{"%R=%0M=%0D %Vl.m. %V11|%0L|%0F", "207=21=14 p.m. 4|14|10"},
+			{"%R=%0M=%0D %Vl.m. %V12|%0L|%0F", "207=21=14 p.m. 4|14|10"},
+		}
+		for _, tc := range tests {
+			t.Run(tc.layout, func(t *testing.T) {
+				marsTime, err := planets.MarsTime{}.Parse(tc.layout, tc.expected)
+				result := marsTime.Format(tc.layout)
+				if err != nil {
+					fmt.Println(err)
+				}
+				assert.Equal(t, result, tc.expected)
+			})
+		}
+	})
 
 	t.Run("Errors", func(t *testing.T) {
 		tests := []struct {
@@ -317,6 +346,23 @@ func TestParseMarsTime(t *testing.T) {
 		}{
 			{"%E rotation %R week %W %NS", "rotation 207 week 82 Saturni"},
 			{"%ERR rotation %R week %W %NS", "rotation 207 week 82 Saturni"},
+
+			// there support vinquas 00 thru 11 thus without AM/PM specifier leaving vinquas 12 thru 23 impossible
+			{"rotation %R week %W %NS %V12", "rotation 207 week 82 Saturni 1"},
+			{"rotation %R week %W %NS %V12", "rotation 207 week 82 Saturni 11"},
+			{"rotation %R week %W %NS %V12", "rotation 207 week 82 Saturni 12"},
+			{"rotation %R week %W %NS %V12", "rotation 207 week 82 Saturni 13"},
+			{"rotation %R week %W %NS %0V12", "rotation 207 week 82 Saturni 01"},
+			{"rotation %R week %W %NS %0V12", "rotation 207 week 82 Saturni 11"},
+			{"rotation %R week %W %NS %0V12", "rotation 207 week 82 Saturni 12"},
+			{"rotation %R week %W %NS %0V12", "rotation 207 week 82 Saturni 13"},
+			{"rotation %R week %W %NS %_V12", "rotation 207 week 82 Saturni  1"},
+			{"rotation %R week %W %NS %_V12", "rotation 207 week 82 Saturni 11"},
+			{"rotation %R week %W %NS %_V12", "rotation 207 week 82 Saturni 12"},
+			{"rotation %R week %W %NS %_V12", "rotation 207 week 82 Saturni 13"},
+
+			// invalid '%Vl' specifier
+			{"%R=%0M=%0D %Vl.m. %V11|%0L|%0F", "207=21=14 m.m. 4|14|10"},
 		}
 		for _, tc := range tests {
 			t.Run(tc.layout, func(t *testing.T) {

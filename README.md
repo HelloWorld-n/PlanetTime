@@ -18,29 +18,38 @@
 
 ## Format Tokens
 
-| Token   | Description                     |
-|---------|---------------------------------|
-| `%R`    | Rotation (year)                 |
-| `%M`    | Month (month)                   |
-| `%S`    | Sol (day)                       |
-| `%V`    | Vinqua (hour)                   |
-| `%L`    | Layer (minute)                  |
-| `%F`    | Fragment (second)               |
-| `%NM`   | Full month name                 |
-| `%nM`   | Abbreviated month name          |
-| `%oS`   | Ordinal Sol (e.g. 14th)         |
-| `%_S`   | Space Padded Sol                |
-| `%0M`   | Zero Padded Month               |
-| `%0S`   | Zero Padded Sol                 |
-| `%0V`   | Zero Padded Vinqua              |
-| `%0L`   | Zero Padded Layer               |
-| `%0F`   | Zero Padded Fragment            |
-| `%W`    | Week number                     |
-| `%WS`   | Weekday number (1–7)            |
-| `%NS`   | Full Sol (weekday) name         |
-| `%nS`   | Abbreviated Sol name            |
-| `%%`    | Literal `%` character           |
-| `%'`    | Used to split tokens from text  |
+| Token   | Description                                                   |
+|---------|---------------------------------------------------------------|
+| `%R`    | Rotation (year)                                               |
+| `%M`    | Month (month)                                                 |
+| `%NM`   | Full Month name                                               |
+| `%nM`   | Abbreviated Month name                                        |
+| `%0M`   | Zero Padded Month                                             |
+| `%W`    | Week number                                                   |
+| `%S`    | Sol (day)                                                     |
+| `%oS`   | Ordinal Sol (e.g. 14th)                                       |
+| `%_S`   | Space Padded Sol                                              |
+| `%0S`   | Zero Padded Sol                                               |
+| `%WS`   | Weekday number (1–7)                                          |
+| `%NS`   | Full Sol (weekday) name                                       |
+| `%nS`   | Abbreviated Sol name                                          |
+| `%V`    | Vinqua (hour)                                                 |
+| `%0V`   | Zero Padded Vinqua                                            |
+| `%_V`   | Underscore Padded Vinqua                                      |
+| `%Vl`   | 'a' if Vinqua % 12 == 0 else 'p'                              |
+| `%Vu`   | 'A' if Vinqua % 12 == 0 else 'P'                              |
+| `%V11`  | Vinqua % 12                                                   |
+| `%0V11` | Zero Padded Vinqua % 12                                       |
+| `%_V11` | Underscore Padded Vinqua % 12                                 |
+| `%V12`  | Vinqua % 12 unless it is 0 in that case 12                    |
+| `%0V12` | Zero Padded Vinqua % 12 unless it is 0 in that case 12        |
+| `%_V12` | Underscore Padded Vinqua % 12 unless it is 0 in that case 12  |
+| `%L`    | Layer (minute)                                                |
+| `%0L`   | Zero Padded Layer                                             |
+| `%F`    | Fragment (second)                                             |
+| `%0F`   | Zero Padded Fragment                                          |
+| `%%`    | Literal `%` character                                         |
+| `%'`    | Used to split tokens from text                                |
 
 
 ## Example

@@ -189,50 +189,70 @@ func (t MarsTime) Format(layout string) (res string) {
 	longMonth := MarsLongMonthNames()[month-1]
 	shortMonth := MarsShortMonthNames()[month-1]
 
+	vinquaLowercase := "a"
+	vinquaUppercase := "A"
+	if vinqua >= 12 {
+		vinquaLowercase = "p"
+		vinquaUppercase = "P"
+	}
+	vinqua11 := vinqua % 12
+	vinqua12 := vinqua11
+	if vinqua11 == 0 {
+		vinqua12 = 12
+	}
+
 	replacements := map[string]string{
-		"%R":  format.Iota(rotation),
-		"%M":  format.Iota(month),
-		"%0M": format.Pad2(month),
-		"%_M": format.PadSpace(month),
-		"%nM": shortMonth,
-		"%NM": longMonth,
-		"%S":  format.Iota(sol),
-		"%oS": format.Ordinal(sol),
-		"%0S": format.Pad2(sol),
-		"%_S": format.PadSpace(sol),
-		"%D":  format.Iota(sol),
-		"%oD": format.Ordinal(sol),
-		"%0D": format.Pad2(sol),
-		"%_D": format.PadSpace(sol),
-		"%w":  format.Iota(week),
-		"%0W": format.Pad2(week),
-		"%_W": format.PadSpace(week),
-		"%W":  format.Iota(week),
-		"%WS": format.Iota(weekSol),
-		"%NS": longSol,
-		"%nS": shortSol,
-		"%WD": format.Iota(weekSol),
-		"%ND": longSol,
-		"%nD": shortSol,
-		"%V":  format.Iota(vinqua),
-		"%0V": format.Pad2(vinqua),
-		"%_V": format.PadSpace(vinqua),
-		"%L":  format.Iota(layer),
-		"%0L": format.Pad2(layer),
-		"%_L": format.PadSpace(layer),
-		"%F":  format.Iota(fragment),
-		"%0F": format.Pad2(fragment),
-		"%_F": format.PadSpace(fragment),
-		"%f":  format.Iota(rem),
-		"%f0": format.Pad9(rem),
-		"%%":  "%",
+		"%R":    format.Iota(rotation),
+		"%M":    format.Iota(month),
+		"%0M":   format.Pad2(month),
+		"%_M":   format.PadSpace(month),
+		"%nM":   shortMonth,
+		"%NM":   longMonth,
+		"%S":    format.Iota(sol),
+		"%oS":   format.Ordinal(sol),
+		"%0S":   format.Pad2(sol),
+		"%_S":   format.PadSpace(sol),
+		"%D":    format.Iota(sol),
+		"%oD":   format.Ordinal(sol),
+		"%0D":   format.Pad2(sol),
+		"%_D":   format.PadSpace(sol),
+		"%w":    format.Iota(week),
+		"%0W":   format.Pad2(week),
+		"%_W":   format.PadSpace(week),
+		"%W":    format.Iota(week),
+		"%WS":   format.Iota(weekSol),
+		"%NS":   longSol,
+		"%nS":   shortSol,
+		"%WD":   format.Iota(weekSol),
+		"%ND":   longSol,
+		"%nD":   shortSol,
+		"%V":    format.Iota(vinqua),
+		"%0V":   format.Pad2(vinqua),
+		"%_V":   format.PadSpace(vinqua),
+		"%V11":  format.Iota(vinqua11),
+		"%0V11": format.Pad2(vinqua11),
+		"%_V11": format.PadSpace(vinqua11),
+		"%V12":  format.Iota(vinqua12),
+		"%0V12": format.Pad2(vinqua12),
+		"%_V12": format.PadSpace(vinqua12),
+		"%Vl":   vinquaLowercase,
+		"%Vu":   vinquaUppercase,
+		"%L":    format.Iota(layer),
+		"%0L":   format.Pad2(layer),
+		"%_L":   format.PadSpace(layer),
+		"%F":    format.Iota(fragment),
+		"%0F":   format.Pad2(fragment),
+		"%_F":   format.PadSpace(fragment),
+		"%f":    format.Iota(rem),
+		"%f0":   format.Pad9(rem),
+		"%%":    "%",
 	}
 
 	var builder strings.Builder
 	for i := 0; i < len(layout); {
 		if layout[i] == '%' {
 			matched := false
-			for length := 4; length > 1; length-- {
+			for length := 5; length > 1; length-- {
 				if i+length <= len(layout) {
 					token := layout[i : i+length]
 					if token == "%'" {
@@ -291,6 +311,8 @@ func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 		weekSol int
 	)
 
+	vinquaRequiresAMPM := false
+	vinquaFullfillsAMPM := false
 	i, j := 0, 0
 	for i < len(layout) {
 		if layout[i] == '%' {
@@ -300,23 +322,19 @@ func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 			}
 			var token string
 			found := false
-			if i+3 <= len(layout) {
-				token = layout[i : i+3]
-				if validToken(token) {
-					i += 3
-					found = true
-				}
-			}
-			if !found && i+2 <= len(layout) {
-				token = layout[i : i+2]
-				if validToken(token) {
-					i += 2
-					found = true
+			maxTokenLength := 5
+			for iK := maxTokenLength; iK > 1; iK-- {
+				if !found && i+iK <= len(layout) {
+					token = layout[i : i+iK]
+					if validToken(token) {
+						i += iK
+						found = true
+					}
 				}
 			}
 			if !found {
 				fragEnd := i + 1
-				for fragEnd < len(layout) && fragEnd < i+4 {
+				for fragEnd < len(layout) && fragEnd < i+maxTokenLength {
 					fragEnd++
 				}
 				return MarsTime{}, fmt.Errorf(`error: fragment "%s" not recognized: use "%%%%" for literal "%%" and use "%%'" to avoid conflict with possible future update`, layout[i:fragEnd])
@@ -334,6 +352,8 @@ func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 				"%D", "%0D", "%_D",
 				"%V", "%0V", "%_V",
 				"%L", "%0L", "%_L",
+				"%V11", "%0V11", "%_V11",
+				"%V12", "%0V12", "%_V12",
 				"%F", "%0F", "%_F",
 				"%f", "%f0",
 				"%w", "%0W", "%_W", "%W",
@@ -341,6 +361,22 @@ func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 				value, consumed, parseErr = format.ParseNumeric(input[j:])
 				if parseErr != nil {
 					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
+				}
+				if token == "%V12" || token == "%_V12" || token == "%0V12" {
+					vinquaRequiresAMPM = true
+					for value >= 12 {
+						value -= 12
+					}
+				}
+			case "%Vl", "%Vu":
+				value, consumed, parseErr = 0, 1, nil
+				vinquaFullfillsAMPM = true
+				if input[j] == 'a' || input[j] == 'A' {
+					value = 0
+				} else if input[j] == 'p' || input[j] == 'P' {
+					value = 12
+				} else {
+					return MarsTime{}, fmt.Errorf("expected element of {'a', 'A', 'p', 'P'} for token %q at position %d in input", token, j)
 				}
 			case "%oS", "%oD":
 				value, consumed, parseErr = format.ParseNumeric(input[j:])
@@ -383,8 +419,8 @@ func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 				month = value
 			case "%S", "%0S", "%_S", "%oS", "%D", "%0D", "%_D", "%oD":
 				sol = value
-			case "%V", "%0V", "%_V":
-				vinqua = value
+			case "%V", "%0V", "%_V", "%V11", "%0V11", "%_V11", "%V12", "%0V12", "%_V12", "%Vl", "%Vu":
+				vinqua += value
 			case "%L", "%0L", "%_L":
 				layer = value
 			case "%F", "%0F", "%_F":
@@ -421,6 +457,10 @@ func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 		return MarsTime{}, fmt.Errorf("insufficient data to reconstruct MarsTime (month: %d, sol: %d)", month, sol)
 	}
 
+	if vinquaRequiresAMPM && !vinquaFullfillsAMPM {
+		return MarsTime{}, fmt.Errorf("vinqua requires AM/PM specification but not provided; use token among {`%%V`, `%%0V`, `%%_V`} for vinqua parsing 00 thru 23")
+	}
+
 	totalSols := 0
 	for r := 0; r < rotation; r++ {
 		totalSols += SolsInRotation(r)
@@ -443,43 +483,51 @@ func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 
 func validToken(token string) bool {
 	valid := map[string]bool{
-		"%R":  true,
-		"%M":  true,
-		"%0M": true,
-		"%_M": true,
-		"%nM": true,
-		"%NM": true,
-		"%S":  true,
-		"%oS": true,
-		"%0S": true,
-		"%_S": true,
-		"%D":  true,
-		"%oD": true,
-		"%0D": true,
-		"%_D": true,
-		"%w":  true,
-		"%0W": true,
-		"%_W": true,
-		"%W":  true,
-		"%WS": true,
-		"%NS": true,
-		"%nS": true,
-		"%WD": true,
-		"%ND": true,
-		"%nD": true,
-		"%V":  true,
-		"%0V": true,
-		"%_V": true,
-		"%L":  true,
-		"%0L": true,
-		"%_L": true,
-		"%F":  true,
-		"%0F": true,
-		"%_F": true,
-		"%f":  true,
-		"%f0": true,
-		"%%":  true,
-		"%'":  true,
+		"%R":    true,
+		"%M":    true,
+		"%0M":   true,
+		"%_M":   true,
+		"%nM":   true,
+		"%NM":   true,
+		"%S":    true,
+		"%oS":   true,
+		"%0S":   true,
+		"%_S":   true,
+		"%D":    true,
+		"%oD":   true,
+		"%0D":   true,
+		"%_D":   true,
+		"%w":    true,
+		"%0W":   true,
+		"%_W":   true,
+		"%W":    true,
+		"%WS":   true,
+		"%NS":   true,
+		"%nS":   true,
+		"%WD":   true,
+		"%ND":   true,
+		"%nD":   true,
+		"%V":    true,
+		"%0V":   true,
+		"%_V":   true,
+		"%V11":  true,
+		"%0V11": true,
+		"%_V11": true,
+		"%V12":  true,
+		"%0V12": true,
+		"%_V12": true,
+		"%Vl":   true,
+		"%Vu":   true,
+		"%L":    true,
+		"%0L":   true,
+		"%_L":   true,
+		"%F":    true,
+		"%0F":   true,
+		"%_F":   true,
+		"%f":    true,
+		"%f0":   true,
+		"%%":    true,
+		"%'":    true,
 	}
 	return valid[token]
 }
