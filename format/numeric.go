@@ -55,3 +55,13 @@ func Ordinal(n int) string {
 		return strconv.Itoa(n) + "th"
 	}
 }
+
+func RemoveZeroesFromDecimalPortionOfNumber(s string) string {
+	for len(s) > 0 && s[len(s)-1] == '0' {
+		s = s[:len(s)-1]
+	}
+	if len(s) == 0 {
+		return "0"
+	}
+	return s
+}

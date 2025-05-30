@@ -145,3 +145,24 @@ func TestOrdinal(t *testing.T) {
 		}
 	}
 }
+
+func TestRemoveZeroesFromDecimalPortionOfNumber(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"12345000", "12345"},
+		{"123000", "123"},
+		{"1234567890", "123456789"},
+		{"123", "123"},
+		{"00000", "0"},
+		{"0000", "0"},
+	}
+
+	for _, test := range tests {
+		result := format.RemoveZeroesFromDecimalPortionOfNumber(test.input)
+		if result != test.expected {
+			t.Errorf("RemoveZeroesFromDecimalPortionOfNumber(%q): expected %q, got %q", test.input, test.expected, result)
+		}
+	}
+}

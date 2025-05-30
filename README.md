@@ -48,16 +48,12 @@
 | `%0L`   | Zero Padded Layer                                             |
 | `%F`    | Fragment (second)                                             |
 | `%0F`   | Zero Padded Fragment                                          |
+| `%f`    | NanoFragment                                                  |
+| `%f0`   | Zero Padded NanoFragment                                      |
 | `%%`    | Literal `%` character                                         |
 | `%'`    | Used to split tokens from text                                |
 
 
 ## Example
 
-```go
-earthTime, _ := time.Parse(time.RFC3339, "2025-04-14T10:29:56Z")
-marsTime := planets.NewMarsTime(&earthTime)
-rotation, month, sol, vinqua, layer, fragment, _ := marsTime.Params()
-fmt.Printf("Rotation: %d, Month: %d, Sol: %d\n", rotation, month, sol)
-fmt.Println("Formatted:", marsTime.Format("%R-%0M-%0D"))
-```
+See file `./main.go`

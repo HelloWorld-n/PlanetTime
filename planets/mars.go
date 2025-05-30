@@ -172,7 +172,7 @@ func (t MarsTime) Params() (rotation int, month int, sol int, vinqua int, layer 
 	vinqua = int(t.DurationOfCurrentSol / Vinqua)
 	layer = int(t.DurationOfCurrentSol % Vinqua / Layer)
 	fragment = int(t.DurationOfCurrentSol % Layer / Fragment)
-	rem = int(t.DurationOfCurrentSol % Fragment)
+	rem = int(t.DurationOfCurrentSol%Fragment) * int(time.Second) / int(Fragment)
 	return
 }
 
@@ -243,7 +243,7 @@ func (t MarsTime) Format(layout string) (res string) {
 		"%F":    format.Iota(fragment),
 		"%0F":   format.Pad2(fragment),
 		"%_F":   format.PadSpace(fragment),
-		"%f":    format.Iota(rem),
+		"%f":    format.RemoveZeroesFromDecimalPortionOfNumber(format.Pad9(rem)),
 		"%f0":   format.Pad9(rem),
 		"%%":    "%",
 	}
