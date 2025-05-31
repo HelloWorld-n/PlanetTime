@@ -36,8 +36,8 @@
 | `%V`    | Vinqua (hour)                                                 |
 | `%0V`   | Zero Padded Vinqua                                            |
 | `%_V`   | Underscore Padded Vinqua                                      |
-| `%Vl`   | 'a' if Vinqua % 12 == 0 else 'p'                              |
-| `%Vu`   | 'A' if Vinqua % 12 == 0 else 'P'                              |
+| `%Vl`   | `a` if Vinqua % 12 == 0 else `p`                              |
+| `%Vu`   | `A` if Vinqua % 12 == 0 else `P`                              |
 | `%V11`  | Vinqua % 12                                                   |
 | `%0V11` | Zero Padded Vinqua % 12                                       |
 | `%_V11` | Underscore Padded Vinqua % 12                                 |
