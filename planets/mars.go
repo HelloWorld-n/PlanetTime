@@ -575,6 +575,7 @@ func ParseMarsWeekSolName(s string, long bool) (n int, nameLen int, err error) {
 func (mt MarsTime) Time() (result time.Time) {
 	result = time.Date(1609, time.March, 11, 18, 40, 34, 0, time.UTC)
 
+	// t.Sub is not able to go more than 2562047h47m16.854775807s
 	quof := 100000
 	for mt.TotalSols > quof {
 		fmt.Println(Sol * time.Duration(quof))
