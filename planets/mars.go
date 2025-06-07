@@ -354,8 +354,7 @@ func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 				"%L", "%0L", "%_L",
 				"%V11", "%0V11", "%_V11",
 				"%V12", "%0V12", "%_V12",
-				"%F", "%0F", "%_F",
-				"%f", "%f0",
+				"%F", "%0F", "%_F", "%f0",
 				"%w", "%0W", "%_W", "%W",
 				"%WS", "%wS", "%WD", "%wD":
 				value, consumed, parseErr = format.ParseNumeric(input[j:])
@@ -368,6 +367,9 @@ func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 						value -= 12
 					}
 				}
+
+			case "%f":
+				value, consumed, parseErr = format.ParseDecimal(input[j:], 9)
 			case "%Vl", "%Vu":
 				value, consumed, parseErr = 0, 1, nil
 				vinquaFullfillsAMPM = true
@@ -426,7 +428,7 @@ func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 			case "%F", "%0F", "%_F":
 				fragment = value
 			case "%f", "%f0":
-				rem = value
+				rem = value*int(Fragment)/int(time.Second) + 1
 			case "%w", "%WS", "%nS", "%NS", "%WD", "%nD", "%ND":
 				weekSol = value
 			case "%W", "%0W", "%_W":

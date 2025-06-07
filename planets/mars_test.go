@@ -201,7 +201,6 @@ func TestParseMarsTime(t *testing.T) {
 			expected string
 		}{
 			{"%R=%0M=%0S%'T%0V|%0L|%0F", "201=02=03T04|05|06"},
-			{"%R=%0M=%0S%'T%0V|%0L|%0F.%f", "201=02=03T04|05|06.712563512"},
 			{"rot %R m%M sol %S started %V vinquas %L layers %F fragments ago", "rot 201 m2 sol 3 started 4 vinquas 5 layers 6 fragments ago"},
 			{"%R %NM %oS", "201 Dhanus 3rd"},
 			{"%R %NM %S%'th", "201 Dhanus 3th"},
@@ -210,13 +209,35 @@ func TestParseMarsTime(t *testing.T) {
 			{"rotation%%%R week %W %NS", "rotation%201 week 5 Martis"},
 
 			{"%R=%0M=%0D%'T%0V|%0L|%0F", "201=02=03T04|05|06"},
-			{"%R=%0M=%0D%'T%0V|%0L|%0F.%f", "201=02=03T04|05|06.712563512"},
 			{"rot %R m%M sol %D started %V vinquas %L layers %F fragments ago", "rot 201 m2 sol 3 started 4 vinquas 5 layers 6 fragments ago"},
 			{"%R %NM %oD", "201 Dhanus 3rd"},
 			{"%R %NM %D%'th", "201 Dhanus 3th"},
 			{"%R=W%0W=%WD", "201=W05=3"},
 			{"rotation %R week %W %ND", "rotation 201 week 5 Martis"},
 			{"rotation%%%R week %W %ND", "rotation%201 week 5 Martis"},
+		}
+		for _, tc := range tests {
+			t.Run(tc.layout, func(t *testing.T) {
+				marsTime, err := planets.MarsTime{}.Parse(tc.layout, tc.expected)
+				result := marsTime.Format(tc.layout)
+				if err != nil {
+					fmt.Println(err)
+				}
+				assert.Equal(t, result, tc.expected)
+			})
+		}
+	})
+	t.Run("NanoFragments", func(t *testing.T) {
+		tests := []struct {
+			layout   string
+			expected string
+		}{
+			{"%R=%0M=%0S%'T%0V|%0L|%0F.%f", "201=02=03T04|05|06.5"},
+			{"%R=%0M=%0S%'T%0V|%0L|%0F.%f0", "201=02=03T04|05|06.500000000"},
+			{"%R=%0M=%0S%'T%0V|%0L|%0F.%f", "201=02=03T04|05|06.000000005"},
+			{"%R=%0M=%0S%'T%0V|%0L|%0F.%f0", "201=02=03T04|05|06.000000005"},
+			{"%R=%0M=%0S%'T%0V|%0L|%0F.%f", "201=02=03T04|05|06.712563515"},
+			{"%R=%0M=%0S%'T%0V|%0L|%0F.%f0", "201=02=03T04|05|06.712563515"},
 		}
 		for _, tc := range tests {
 			t.Run(tc.layout, func(t *testing.T) {

@@ -3,6 +3,7 @@ package format
 import (
 	"fmt"
 	"strconv"
+	"unicode"
 )
 
 func ParseNumeric(s string) (n int, nRunes int, err error) {
@@ -64,4 +65,20 @@ func RemoveZeroesFromDecimalPortionOfNumber(s string) string {
 		return "0"
 	}
 	return s
+}
+
+func ParseDecimal(s string, n int) (value int, consumed int, err error) {
+	for consumed < len(s) && consumed < n && unicode.IsDigit(rune(s[consumed])) {
+		d := int(s[consumed] - '0')
+		value = value*10 + d
+		consumed++
+	}
+	if consumed == 0 {
+		return 0, 0, strconv.ErrSyntax
+	}
+	for consumed < n {
+		n -= 1
+		value *= 10
+	}
+	return value, consumed, nil
 }

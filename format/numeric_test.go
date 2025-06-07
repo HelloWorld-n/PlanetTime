@@ -2,6 +2,7 @@ package format_test
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 
 	"planetTime/format"
@@ -163,6 +164,40 @@ func TestRemoveZeroesFromDecimalPortionOfNumber(t *testing.T) {
 		result := format.RemoveZeroesFromDecimalPortionOfNumber(test.input)
 		if result != test.expected {
 			t.Errorf("RemoveZeroesFromDecimalPortionOfNumber(%q): expected %q, got %q", test.input, test.expected, result)
+		}
+	}
+}
+func TestParseDecimal(t *testing.T) {
+	tests := []struct {
+		input        string
+		n            int
+		wantValue    int
+		wantConsumed int
+		wantErr      error
+	}{
+		{"12345", 5, 12345, 5, nil},
+		{"12345", 3, 123, 3, nil},
+		{"00123", 5, 123, 5, nil},
+		{"12abc", 5, 12000, 2, nil},
+		{"abc", 3, 0, 0, strconv.ErrSyntax},
+		{"", 2, 0, 0, strconv.ErrSyntax},
+		{"1", 0, 0, 0, strconv.ErrSyntax},
+		{"987654321", 4, 9876, 4, nil},
+		{"000", 2, 0, 2, nil},
+		{"9a8", 3, 900, 1, nil},
+	}
+
+	for _, tt := range tests {
+		gotValue, gotConsumed, gotErr := format.ParseDecimal(tt.input, tt.n)
+		if gotErr == nil && (gotValue != tt.wantValue || gotConsumed != tt.wantConsumed) {
+			t.Errorf("ParseDecimal(%q, %d) = (%d, %d, %v), want (%d, %d, %v)",
+				tt.input, tt.n, gotValue, gotConsumed, gotErr, tt.wantValue, tt.wantConsumed, tt.wantErr)
+		}
+		if (gotErr == nil) != (tt.wantErr == nil) {
+			t.Errorf("ParseDecimal(%q, %d) error = %v, want %v", tt.input, tt.n, gotErr, tt.wantErr)
+		}
+		if gotErr != nil && tt.wantErr != nil && gotErr.Error() != tt.wantErr.Error() {
+			t.Errorf("ParseDecimal(%q, %d) error = %v, want %v", tt.input, tt.n, gotErr, tt.wantErr)
 		}
 	}
 }
