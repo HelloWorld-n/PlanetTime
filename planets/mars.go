@@ -322,19 +322,21 @@ func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 			}
 			var token string
 			found := false
-			maxTokenLength := 5
-			for iK := maxTokenLength; iK > 1; iK-- {
-				if !found && i+iK <= len(layout) {
-					token = layout[i : i+iK]
-					if validToken(token) {
-						i += iK
-						found = true
-					}
+			maxTokenLen := 5
+			if i+maxTokenLen > len(layout) {
+				maxTokenLen = len(layout) - i
+			}
+			for l := maxTokenLen; l >= 2; l-- {
+				token = layout[i : i+l]
+				if validToken(token) {
+					i += l
+					found = true
+					break
 				}
 			}
 			if !found {
 				fragEnd := i + 1
-				for fragEnd < len(layout) && fragEnd < i+maxTokenLength {
+				for fragEnd < len(layout) && fragEnd < i+maxTokenLen {
 					fragEnd++
 				}
 				return MarsTime{}, fmt.Errorf(`error: fragment "%s" not recognized: use "%%%%" for literal "%%" and use "%%'" to avoid conflict with possible future update`, layout[i:fragEnd])
