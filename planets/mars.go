@@ -22,7 +22,12 @@ const (
 
 // Functions returning the slices, instead of global variables, to emulate immutability
 
+// Deprecated: use MarsTime{}.LongWeekSolNames() instead
 func MarsLongWeekSolNames() []string {
+	return MarsTime{}.LongWeekSolNames()
+}
+
+func (t MarsTime) LongWeekSolNames() []string {
 	return []string{
 		"Solis",
 		"Lunae",
@@ -34,7 +39,12 @@ func MarsLongWeekSolNames() []string {
 	}
 }
 
+// Deprecated: use MarsTime{}.ShortWeekSolNames() instead
 func MarsShortWeekSolNames() []string {
+	return MarsTime{}.ShortWeekSolNames()
+}
+
+func (t MarsTime) ShortWeekSolNames() []string {
 	return []string{
 		"Sol", // Solis
 		"Lun", // Lunae
@@ -46,7 +56,12 @@ func MarsShortWeekSolNames() []string {
 	}
 }
 
+// Deprecated: use MarsTime{}.LongMonthNames() instead
 func MarsLongMonthNames() []string {
+	return MarsTime{}.LongMonthNames()
+}
+
+func (t MarsTime) LongMonthNames() []string {
 	return []string{
 		"Sagittarius",
 		"Dhanus",
@@ -75,7 +90,12 @@ func MarsLongMonthNames() []string {
 	}
 }
 
+// Deprecated: use MarsTime{}.ShortMonthNames() instead
 func MarsShortMonthNames() []string {
+	return MarsTime{}.ShortMonthNames()
+}
+
+func (t MarsTime) ShortMonthNames() []string {
 	return []string{
 		"Sag", // Sagittarius
 		"Dha", // Dhanus
@@ -104,7 +124,12 @@ func MarsShortMonthNames() []string {
 	}
 }
 
+// Deprecated: use MarsTime{}.RotationHasLeapVrishika28th() instead
 func RotationHasLeapVrishika28th(rotation int) (res bool) {
+	return MarsTime{}.RotationHasLeapVrishika28th(rotation)
+}
+
+func (t MarsTime) RotationHasLeapVrishika28th(rotation int) (res bool) {
 	if rotation%500 == 0 {
 		return true
 	}
@@ -120,15 +145,25 @@ func RotationHasLeapVrishika28th(rotation int) (res bool) {
 	return true
 }
 
+// Deprecated: use MarsTime{}.SolsInRotation(rotation int) instead
 func SolsInRotation(rotation int) (sols int) {
+	return MarsTime{}.SolsInRotation(rotation)
+}
+
+func (t MarsTime) SolsInRotation(rotation int) (sols int) {
 	sols = 668
-	if RotationHasLeapVrishika28th(rotation) {
+	if t.RotationHasLeapVrishika28th(rotation) {
 		sols += 1
 	}
 	return
 }
 
+// Deprecated: use(t MarsTime) SolsInMonth(month int) instead
 func SolsInMonth(month int) (sols int) {
+	return MarsTime{}.SolsInMonth(month)
+}
+
+func (t MarsTime) SolsInMonth(month int) (sols int) {
 	if month%6 == 0 {
 		return 27
 	}
@@ -159,12 +194,12 @@ func NewMarsTime(t *time.Time) (res MarsTime) {
 func (t MarsTime) Params() (rotation int, month int, sol int, vinqua int, layer int, fragment int, rem int) {
 	month = 1
 	sol = t.TotalSols
-	for sol >= SolsInRotation(rotation) {
-		sol -= SolsInRotation(rotation)
+	for sol >= t.SolsInRotation(rotation) {
+		sol -= t.SolsInRotation(rotation)
 		rotation += 1
 	}
-	for sol >= SolsInMonth(month) {
-		sol -= SolsInMonth(month)
+	for sol >= t.SolsInMonth(month) {
+		sol -= t.SolsInMonth(month)
 		month += 1
 	}
 	sol += 1
@@ -184,10 +219,10 @@ func (t MarsTime) Format(layout string) (res string) {
 		weekSol = 7
 	}
 
-	longSol := MarsLongWeekSolNames()[weekSol-1]
-	shortSol := MarsShortWeekSolNames()[weekSol-1]
-	longMonth := MarsLongMonthNames()[month-1]
-	shortMonth := MarsShortMonthNames()[month-1]
+	longSol := t.LongWeekSolNames()[weekSol-1]
+	shortSol := t.ShortWeekSolNames()[weekSol-1]
+	longMonth := t.LongMonthNames()[month-1]
+	shortMonth := t.ShortMonthNames()[month-1]
 
 	vinquaLowercase := "a"
 	vinquaUppercase := "A"
@@ -293,11 +328,12 @@ func (t MarsTime) Format(layout string) (res string) {
 	return builder.String()
 }
 
-func (t MarsTime) Parse(layout string, input string) (mt MarsTime, err error) {
-	return ParseMarsTime(layout, input)
+// Deprrecated: use MarsTime{}.Parse(layout string, input string) instead
+func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
+	return mt.Parse(layout, input)
 }
 
-func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
+func (t MarsTime) Parse(layout string, input string) (mt MarsTime, err error) {
 	var (
 		rotation int
 		month    int
@@ -467,10 +503,10 @@ func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
 
 	totalSols := 0
 	for r := 0; r < rotation; r++ {
-		totalSols += SolsInRotation(r)
+		totalSols += t.SolsInRotation(r)
 	}
 	for m := 1; m < month; m++ {
-		totalSols += SolsInMonth(m)
+		totalSols += t.SolsInMonth(m)
 	}
 	totalSols += (sol - 1)
 
@@ -536,16 +572,16 @@ func validToken(token string) bool {
 	return valid[token]
 }
 
-func (t MarsTime) ParseMonthName(s string, long bool) (n int, nameLen int, err error) {
-	return ParseMarsMonthName(s, long)
+func ParseMarsMonthName(s string, long bool) (n int, nameLen int, err error) {
+	return MarsTime{}.ParseMonthName(s, long)
 }
 
-func ParseMarsMonthName(s string, long bool) (n int, nameLen int, err error) {
+func (t MarsTime) ParseMonthName(s string, long bool) (n int, nameLen int, err error) {
 	var names []string
 	if long {
-		names = MarsLongMonthNames()
+		names = t.LongMonthNames()
 	} else {
-		names = MarsShortMonthNames()
+		names = t.ShortMonthNames()
 	}
 	for i, name := range names {
 		if strings.HasPrefix(s, name) {
@@ -556,16 +592,16 @@ func ParseMarsMonthName(s string, long bool) (n int, nameLen int, err error) {
 	return
 }
 
-func (t MarsTime) ParseWeekSolName(s string, long bool) (n int, nameLen int, err error) {
-	return ParseMarsWeekSolName(s, long)
+func ParseMarsWeekSolName(s string, long bool) (n int, nameLen int, err error) {
+	return MarsTime{}.ParseWeekSolName(s, long)
 }
 
-func ParseMarsWeekSolName(s string, long bool) (n int, nameLen int, err error) {
+func (t MarsTime) ParseWeekSolName(s string, long bool) (n int, nameLen int, err error) {
 	var names []string
 	if long {
-		names = MarsLongWeekSolNames()
+		names = t.LongWeekSolNames()
 	} else {
-		names = MarsShortWeekSolNames()
+		names = t.ShortWeekSolNames()
 	}
 	for i, name := range names {
 		if strings.HasPrefix(s, name) {
