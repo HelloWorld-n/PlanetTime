@@ -371,11 +371,12 @@ func (t MarsTime) Parse(layout string, input string) (mt MarsTime, err error) {
 			case "%Vl", "%Vu":
 				value, consumed, parseErr = 0, 1, nil
 				vinquaFullfillsAMPM = true
-				if input[j] == 'a' || input[j] == 'A' {
+				switch input[j] {
+				case 'a', 'A':
 					value = 0
-				} else if input[j] == 'p' || input[j] == 'P' {
+				case 'p', 'P':
 					value = 12
-				} else {
+				default:
 					return MarsTime{}, fmt.Errorf("expected element of {'a', 'A', 'p', 'P'} for token %q at position %d in input", token, j)
 				}
 			case "%oS", "%oD":
