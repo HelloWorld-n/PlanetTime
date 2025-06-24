@@ -22,11 +22,6 @@ const (
 
 // Functions returning the slices, instead of global variables, to emulate immutability
 
-// Deprecated: use MarsTime{}.LongWeekSolNames() instead
-func MarsLongWeekSolNames() []string {
-	return MarsTime{}.LongWeekSolNames()
-}
-
 func (t MarsTime) LongWeekSolNames() []string {
 	return []string{
 		"Solis",
@@ -39,11 +34,6 @@ func (t MarsTime) LongWeekSolNames() []string {
 	}
 }
 
-// Deprecated: use MarsTime{}.ShortWeekSolNames() instead
-func MarsShortWeekSolNames() []string {
-	return MarsTime{}.ShortWeekSolNames()
-}
-
 func (t MarsTime) ShortWeekSolNames() []string {
 	return []string{
 		"Sol", // Solis
@@ -54,11 +44,6 @@ func (t MarsTime) ShortWeekSolNames() []string {
 		"Ven", // Veneris
 		"Sat", // Saturni
 	}
-}
-
-// Deprecated: use MarsTime{}.LongMonthNames() instead
-func MarsLongMonthNames() []string {
-	return MarsTime{}.LongMonthNames()
 }
 
 func (t MarsTime) LongMonthNames() []string {
@@ -90,11 +75,6 @@ func (t MarsTime) LongMonthNames() []string {
 	}
 }
 
-// Deprecated: use MarsTime{}.ShortMonthNames() instead
-func MarsShortMonthNames() []string {
-	return MarsTime{}.ShortMonthNames()
-}
-
 func (t MarsTime) ShortMonthNames() []string {
 	return []string{
 		"Sag", // Sagittarius
@@ -124,11 +104,6 @@ func (t MarsTime) ShortMonthNames() []string {
 	}
 }
 
-// Deprecated: use MarsTime{}.RotationHasLeapVrishika28th() instead
-func RotationHasLeapVrishika28th(rotation int) (res bool) {
-	return MarsTime{}.RotationHasLeapVrishika28th(rotation)
-}
-
 func (t MarsTime) RotationHasLeapVrishika28th(rotation int) (res bool) {
 	if rotation%500 == 0 {
 		return true
@@ -145,22 +120,12 @@ func (t MarsTime) RotationHasLeapVrishika28th(rotation int) (res bool) {
 	return true
 }
 
-// Deprecated: use MarsTime{}.SolsInRotation(rotation int) instead
-func SolsInRotation(rotation int) (sols int) {
-	return MarsTime{}.SolsInRotation(rotation)
-}
-
 func (t MarsTime) SolsInRotation(rotation int) (sols int) {
 	sols = 668
 	if t.RotationHasLeapVrishika28th(rotation) {
 		sols += 1
 	}
 	return
-}
-
-// Deprecated: use(t MarsTime) SolsInMonth(month int) instead
-func SolsInMonth(month int) (sols int) {
-	return MarsTime{}.SolsInMonth(month)
 }
 
 func (t MarsTime) SolsInMonth(month int) (sols int) {
@@ -328,11 +293,6 @@ func (t MarsTime) Format(layout string) (res string) {
 	return builder.String()
 }
 
-// Deprrecated: use MarsTime{}.Parse(layout string, input string) instead
-func ParseMarsTime(layout string, input string) (mt MarsTime, err error) {
-	return mt.Parse(layout, input)
-}
-
 func (t MarsTime) Parse(layout string, input string) (mt MarsTime, err error) {
 	var (
 		rotation int
@@ -430,22 +390,22 @@ func (t MarsTime) Parse(layout string, input string) (mt MarsTime, err error) {
 				}
 				consumed = 1
 			case "%NM":
-				value, consumed, parseErr = ParseMarsMonthName(input[j:], true)
+				value, consumed, parseErr = t.ParseMonthName(input[j:], true)
 				if parseErr != nil {
 					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
 				}
 			case "%nM":
-				value, consumed, parseErr = ParseMarsMonthName(input[j:], false)
+				value, consumed, parseErr = t.ParseMonthName(input[j:], false)
 				if parseErr != nil {
 					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
 				}
 			case "%NS", "%ND":
-				value, consumed, parseErr = ParseMarsWeekSolName(input[j:], true)
+				value, consumed, parseErr = t.ParseWeekSolName(input[j:], true)
 				if parseErr != nil {
 					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
 				}
 			case "%nS", "%nD":
-				value, consumed, parseErr = ParseMarsWeekSolName(input[j:], false)
+				value, consumed, parseErr = t.ParseWeekSolName(input[j:], false)
 				if parseErr != nil {
 					return MarsTime{}, fmt.Errorf("token %q: %v", token, parseErr)
 				}
@@ -572,10 +532,6 @@ func validToken(token string) bool {
 	return valid[token]
 }
 
-func ParseMarsMonthName(s string, long bool) (n int, nameLen int, err error) {
-	return MarsTime{}.ParseMonthName(s, long)
-}
-
 func (t MarsTime) ParseMonthName(s string, long bool) (n int, nameLen int, err error) {
 	var names []string
 	if long {
@@ -590,10 +546,6 @@ func (t MarsTime) ParseMonthName(s string, long bool) (n int, nameLen int, err e
 	}
 	err = fmt.Errorf("no matching month name found in %q", s)
 	return
-}
-
-func ParseMarsWeekSolName(s string, long bool) (n int, nameLen int, err error) {
-	return MarsTime{}.ParseWeekSolName(s, long)
 }
 
 func (t MarsTime) ParseWeekSolName(s string, long bool) (n int, nameLen int, err error) {
