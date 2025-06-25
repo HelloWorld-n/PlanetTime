@@ -293,9 +293,9 @@ func TestParseMarsTime(t *testing.T) {
 			layout   string
 			expected string
 		}{
-			{"%R=%0M=%0D%Vu%0V11|%0L|%0F", "207=21=14A04|14|10"},
-			{"%R=%0M=%0D %Vl.m. %V11|%0L|%0F", "207=21=14 a.m. 4|14|10"},
-			{"%R=%0M=%0D %Vl.m. %V12|%0L|%0F", "207=21=14 a.m. 4|14|10"},
+			{"%R=%0M=%0S%Vu%0V11|%0L|%0F", "207=21=14A04|14|10"},
+			{"%R=%0M=%0S %Vl.m. %V11|%0L|%0F", "207=21=14 a.m. 4|14|10"},
+			{"%R=%0M=%0S %Vl.m. %V12|%0L|%0F", "207=21=14 a.m. 4|14|10"},
 
 			{"%R=%0M=%0D%Vu%0V11|%0L|%0F", "207=21=14P04|14|10"},
 			{"%R=%0M=%0D %Vl.m. %V11|%0L|%0F", "207=21=14 p.m. 4|14|10"},
@@ -390,6 +390,106 @@ func TestParseMarsTime(t *testing.T) {
 				_, err := planets.MarsTime{}.Parse(tc.layout, tc.expected)
 				assert.NotEqual(t, err, nil)
 				fmt.Println(err)
+			})
+		}
+	})
+}
+
+func TestMarsTimeExamples(t *testing.T) {
+	t.Run("BasicTest", func(t *testing.T) {
+		tests := []struct {
+			example  string
+			expected string
+		}{
+			{"203=04=05T00|01|02", "201=02=03T04|05|06"},
+			{"rot 203 m4 sol 5 started 0 vinquas 1 layers 2 fragments ago", "rot 201 m2 sol 3 started 4 vinquas 5 layers 6 fragments ago"},
+			{"203 Makara 5th", "201 Dhanus 3rd"},
+			{"203=W13=5", "201=W05=3"},
+			{"rotation 203 week !13 Jovis", "rotation 201 week 5 Martis"},
+			{"rotation%203 week !13 Jovis", "rotation%201 week 5 Martis"},
+		}
+		for _, tc := range tests {
+			t.Run(tc.example, func(t *testing.T) {
+				marsTime, err := planets.MarsTime{}.ParseExample(tc.example, tc.expected)
+				result := marsTime.FormatExample(tc.example)
+				if err != nil {
+					fmt.Println(err)
+				}
+				assert.Equal(t, result, tc.expected)
+			})
+		}
+	})
+	t.Run("NanoFragments", func(t *testing.T) {
+		tests := []struct {
+			example  string
+			expected string
+		}{
+			{"203=04=05T00|01|02.3", "201=02=03T04|05|06.5"},
+			{"203=04=05T00|01|02.300000000", "201=02=03T04|05|06.500000000"},
+			{"203=04=05T00|01|02.3", "201=02=03T04|05|06.000000005"},
+			{"203=04=05T00|01|02.300000000", "201=02=03T04|05|06.000000005"},
+			{"203=04=05T00|01|02.3", "201=02=03T04|05|06.712563515"},
+			{"203=04=05T00|01|02.300000000", "201=02=03T04|05|06.712563515"},
+		}
+		for _, tc := range tests {
+			t.Run(tc.example, func(t *testing.T) {
+				marsTime, err := planets.MarsTime{}.ParseExample(tc.example, tc.expected)
+				result := marsTime.FormatExample(tc.example)
+				if err != nil {
+					fmt.Println(err)
+				}
+				assert.Equal(t, result, tc.expected)
+			})
+		}
+	})
+	t.Run("SolSaturni", func(t *testing.T) {
+		tests := []struct {
+			example  string
+			expected string
+		}{
+			{"203=04=05T00|01|02", "207=21=14T16|14|10"},
+			{"rot 203 m04 sol 05 started 00 vinquas 01 layers 02 fragments ago", "rot 207 m21 sol 14 started 16 vinquas 14 layers 10 fragments ago"},
+			{"203 Makara 05th", "207 Libra 14th"},
+			{"203=W13=5", "207=W82=7"},
+			{"rotation 203 week 13 Jovis", "rotation 207 week 82 Saturni"},
+
+			{"203 Mak 5", "207 Lib 14"},
+			{"203 Mak _5", "207 Lib  7"},
+			{"rotation 203 week 13 Jov", "rotation 207 week 82 Sat"},
+		}
+		for _, tc := range tests {
+			t.Run(tc.example, func(t *testing.T) {
+				marsTime, err := planets.MarsTime{}.ParseExample(tc.example, tc.expected)
+				result := marsTime.FormatExample(tc.example)
+				if err != nil {
+					fmt.Println(err)
+				}
+				assert.Equal(t, result, tc.expected)
+			})
+		}
+	})
+	t.Run("SplitVinquaInfo", func(t *testing.T) {
+		tests := []struct {
+			example  string
+			expected string
+		}{
+			{"203=04=05A00|01|02", "207=21=14A04|14|10"},
+			{"203=04=05 a.m. 0|01|02", "207=21=14 a.m. 4|14|10"},
+			{"203=04=05 a.m. 0|01|02", "207=21=14 a.m. 4|14|10"},
+
+			{"203=04=05 a.m. 0|01|02", "207=21=14 a.m. 0|14|10"},
+			{"203=04=05 a.m. 00|01|02", "207=21=14 a.m. 00|14|10"},
+			{"203=04=05 a.m. 12|01|02", "207=21=14 a.m. 12|14|10"},
+			{"203=04=05 a.m. 12|01|02", "207=21=14 a.m. 4|14|10"},
+		}
+		for _, tc := range tests {
+			t.Run(tc.example, func(t *testing.T) {
+				marsTime, err := planets.MarsTime{}.ParseExample(tc.example, tc.expected)
+				result := marsTime.FormatExample(tc.example)
+				if err != nil {
+					fmt.Println(err)
+				}
+				assert.Equal(t, result, tc.expected)
 			})
 		}
 	})

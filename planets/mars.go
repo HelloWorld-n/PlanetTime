@@ -156,6 +156,83 @@ func NewMarsTime(t *time.Time) (res MarsTime) {
 	return res
 }
 
+func (t MarsTime) ExampleToLayout(example string) (layout string) {
+	replacements := map[string]string{
+		"203": "%R",
+
+		"Makara": "%NM",
+		"Mak":    "%nM",
+		"04":     "%0M",
+		"_4":     "%_M",
+		"4":      "%M",
+		"13":     "%0W",
+		"!13":    "%W",
+
+		"Jovis": "%NS",
+		"Jov":   "%nS",
+		"05":    "%0S",
+		"_5":    "%_S",
+		"5":     "%S",
+		"5th":   "%oS",
+
+		"A.": "%Vu.",
+		"a.": "%Vl.",
+		"A00": "%Vu%0V11",
+		"00": "%0V",
+		"_0": "%_V",
+		"0":  "%V",
+		"12": "%V12",
+
+		"01": "%0L",
+		"_1": "%_L",
+		"1":  "%L",
+
+		"02":        "%0F",
+		"_2":        "%_F",
+		"2":         "%F",
+		"3":         "%f",
+		"300000000": "%f0",
+	}
+	isWeekAdded := false
+
+	for len(example) > 0 {
+		matched := false
+		addLayout := ""
+		removeExample := ""
+		for k, v := range replacements {
+			if len(removeExample) > len(k) {
+				continue
+			}
+			if strings.HasPrefix(example, k) {
+				addLayout = v
+				removeExample = k
+				matched = true
+			}
+		}
+		if matched {
+			example = example[len(removeExample):]
+			layout += addLayout + "%'"
+			if addLayout == "%W" || addLayout == "%0W" || addLayout == "%_W" {
+				isWeekAdded = true
+			}
+		} else {
+			if example[0] == '%' {
+				layout += "%%"
+				example = example[1:]
+			} else {
+				layout += string(example[0])
+				example = example[1:]
+			}
+		}
+	}
+
+	if isWeekAdded {
+		layout = strings.ReplaceAll(layout, "%S", "%WS")
+	}
+
+	return layout
+}
+
 func (t MarsTime) Params() (rotation int, month int, sol int, vinqua int, layer int, fragment int, rem int) {
 	month = 1
 	sol = t.TotalSols
@@ -291,6 +368,11 @@ func (t MarsTime) Format(layout string) (res string) {
 		}
 	}
 	return builder.String()
+}
+
+func (t MarsTime) FormatExample(example string) (res string) {
+	layout := t.ExampleToLayout(example)
+	return t.Format(layout)
 }
 
 func (t MarsTime) Parse(layout string, input string) (mt MarsTime, err error) {
@@ -480,6 +562,11 @@ func (t MarsTime) Parse(layout string, input string) (mt MarsTime, err error) {
 		TotalSols:            totalSols,
 		DurationOfCurrentSol: duration,
 	}, nil
+}
+
+func (t MarsTime) ParseExample(example string, input string) (mt MarsTime, err error) {
+	layout := t.ExampleToLayout(example)
+	return t.Parse(layout, input)
 }
 
 func validToken(token string) bool {
