@@ -56,4 +56,35 @@
 
 ## Example
 
-See file `./main.go`
+```go
+package main
+
+import (
+	"fmt"
+	"planetTime/planets"
+	"time"
+)
+
+func main() {
+	earthTime := time.Now().UTC()
+	marsTime := planets.NewMarsTime(&earthTime)
+	fmt.Println(marsTime.Format("rot %R %NM %oD started %V vinquas %L layers %F fragments ago"))
+	// example output: "rot 221 Mina 26th started 14 vinquas 35 layers 0 fragments ago"
+
+	// specific time
+	customTime, _ := planets.MarsTime{}.Parse("%R=%0M=%0S%'T%0V|%0L|%0F", "221=08=26T14|35|00")
+	fmt.Println(customTime.Format("rot %R %NM %oD started %V vinquas %L layers %F fragments ago"))
+	// output: "rot 221 Mina 26th started 14 vinquas 35 layers 0 fragments ago"
+
+	fmt.Println(customTime.Format("%NS, %R %NM %oD @ %0V|%0L|%0F"))
+	// output: "Jovis, 221 Mina 26th @ 14|35|00"
+
+	customTime, _ := planets.MarsTime{}.Parse("%R=%0M=%0S%'T%0V|%0L|%0F", "221=08=03T14|35|00")
+	fmt.Println(customTime.Format("%NS, %R %NM %oD @ %0V|%0L|%0F"))
+	// output: "Martis, 221 Mina 3rd @ 14|35|00"
+}
+```
+
+`planetTime.planets.MarsTime` also has methods `ParseExample`, `FormatExample` that use examples instead of layouts.
+Those methods use 203=04=05T00|01|02 as basic date.
+See file `./main.go` for example.
