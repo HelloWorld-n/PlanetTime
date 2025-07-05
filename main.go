@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"planetTime/planets"
 	"time"
+
+	"github.com/HelloWorld-n/PlanetTime/planets"
 )
 
 func main() {

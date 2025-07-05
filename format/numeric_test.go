@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"testing"
 
-	"planetTime/format"
+	"github.com/HelloWorld-n/PlanetTime/format"
 )
 
 func TestParseNumeric(t *testing.T) {

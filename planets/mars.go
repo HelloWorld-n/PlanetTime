@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"planetTime/format"
+	"github.com/HelloWorld-n/PlanetTime/format"
 )
 
 type MarsTime struct {
@@ -175,13 +175,13 @@ func (t MarsTime) ExampleToLayout(example string) (layout string) {
 		"5":     "%S",
 		"5th":   "%oS",
 
-		"A.": "%Vu.",
-		"a.": "%Vl.",
+		"A.":  "%Vu.",
+		"a.":  "%Vl.",
 		"A00": "%Vu%0V11",
-		"00": "%0V",
-		"_0": "%_V",
-		"0":  "%V",
-		"12": "%V12",
+		"00":  "%0V",
+		"_0":  "%_V",
+		"0":   "%V",
+		"12":  "%V12",
 
 		"01": "%0L",
 		"_1": "%_L",

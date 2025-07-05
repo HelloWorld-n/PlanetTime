@@ -8,7 +8,7 @@ import (
 
 	"gopkg.in/go-playground/assert.v1"
 
-	"planetTime/planets"
+	"github.com/HelloWorld-n/PlanetTime/planets"
 )
 
 func TestMarsDateTotalSols(t *testing.T) {
